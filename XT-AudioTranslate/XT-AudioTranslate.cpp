@@ -11,6 +11,8 @@ char API_URL[256];
 
 // http://www.x-ways.net/forensics/x-tensions/XWF_functions.html#E
 
+// https://chatgpt.com/share/67123ee9-22c0-8005-9104-50ceaff5d606
+
 LONG __stdcall XT_Init(DWORD nVersion, DWORD nFlags, HANDLE hMainWnd, void* lpReserved)
 {
 	XT_RetrieveFunctionPointers();
