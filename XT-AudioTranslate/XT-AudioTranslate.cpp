@@ -1,85 +1,64 @@
-///////////////////////////////////////////////////////////////////////////////
-// X-Tension API - template for new X-Tensions
-// Copyright X-Ways Software Technology AG
-///////////////////////////////////////////////////////////////////////////////
-
+#include <stdio.h>
 #include "X-Tension.h"
 
-// Please consult
-// http://x-ways.com/forensics/x-tensions/api.html
-// for current documentation
+#define MAX_MSG_LEN 128
 
-///////////////////////////////////////////////////////////////////////////////
-// XT_Init
+wchar_t buf[MAX_MSG_LEN];
+static const wchar_t* XT_NAME = L"[XT_AudioTranslate]"; // Prefix for messages
 
-LONG __stdcall XT_Init(DWORD nVersion, DWORD nFlags, HANDLE hMainWnd,
-	void* lpReserved)
+// http://www.x-ways.net/forensics/x-tensions/XWF_functions.html#E
+
+LONG __stdcall XT_Init(DWORD nVersion, DWORD nFlags, HANDLE hMainWnd, void* lpReserved)
 {
 	XT_RetrieveFunctionPointers();
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_Init", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Init", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 1;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// XT_Done
-
 LONG __stdcall XT_Done(void* lpReserved)
 {
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_Done", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Done", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// XT_About
 
 LONG __stdcall XT_About(HANDLE hParentWnd, void* lpReserved)
 {
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_About", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_About", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// XT_Prepare
 
 LONG __stdcall XT_Prepare(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType, void* lpReserved)
 {
-	XWF_OutputMessage (L"[XT_AudioTranslate] XT_Prepare", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// XT_Finalize
 
 LONG __stdcall XT_Finalize(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType, void* lpReserved)
 {
-	XWF_OutputMessage (L"[XT_AudioTranslate] XT_Finalize", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Finalize", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// XT_ProcessItem
-
-LONG __stdcall XT_ProcessItem(LONG nItemID, void* lpReserved)
-{
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_ProcessItem", 0);
-	return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// XT_ProcessItemEx
 
 LONG __stdcall XT_ProcessItemEx(LONG nItemID, HANDLE hItem, void* lpReserved)
 {
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_ProcessItemEx", 0);
+	const wchar_t* name = XWF_GetItemName(nItemID);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_ProcessItemEx - %ls", XT_NAME, name);
+	XWF_OutputMessage(buf, 0);
+
+	swprintf(buf, MAX_MSG_LEN, L"[XTAT] audio:tranlate:original %ls", name);
+	XWF_AddExtractedMetadata(nItemID, buf, 0x02);
 	return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// XT_ProcessSearchHit
-
 LONG __stdcall XT_ProcessSearchHit(struct SearchHitInfo* info)
 {
-	XWF_OutputMessage(L"[XT_AudioTranslate] XT_ProcessSearchHit", 0);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_ProcessSearchHit", XT_NAME);
+	XWF_OutputMessage(buf, 0);
 	return 0;
 }
 

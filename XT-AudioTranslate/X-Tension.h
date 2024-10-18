@@ -434,25 +434,11 @@ LONG __stdcall XT_Init(DWORD/*CallerInfo*/ info, DWORD nFlags, HANDLE hMainWnd,	
 // In order to implement the functions, implement them and activate them
 // in the module definition file
 
-// XT_Done
 LONG __stdcall XT_Done(void* lpReserved);
-
-// XT_About
 LONG __stdcall XT_About(HANDLE hParentWnd, void* lpReserved);
-
-// XT_Prepare
 LONG __stdcall XT_Prepare(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType, void* lpReserved);
-
-// XT_Finalize
 LONG __stdcall XT_Finalize(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType,	void* lpReserved);
-
-// XT_ProcessItem
-LONG __stdcall XT_ProcessItem(LONG nItemID, void* lpReserved);
-
-// XT_ProcessItemEx
 LONG __stdcall XT_ProcessItemEx(LONG nItemID, HANDLE hItem, void* lpReserved);
-
-// XT_ProcessSearchHit
 LONG __stdcall XT_ProcessSearchHit(struct SearchHitInfo* info);
 
 #endif

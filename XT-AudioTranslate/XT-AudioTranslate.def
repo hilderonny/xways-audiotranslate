@@ -4,6 +4,5 @@ XT_Done
 XT_About
 XT_Prepare
 XT_Finalize
-XT_ProcessItem
 XT_ProcessItemEx
 XT_ProcessSearchHit
