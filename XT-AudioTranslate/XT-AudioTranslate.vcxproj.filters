@@ -16,4 +16,7 @@
   <ItemGroup>
     <None Include="XT-AudioTranslate.def" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="XT-AudioTranslate.cfg" />
+  </ItemGroup>
 </Project>
