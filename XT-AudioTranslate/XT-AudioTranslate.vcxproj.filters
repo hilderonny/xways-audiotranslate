@@ -8,13 +8,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="X-Tension.h" />
+    <ClInclude Include="TaskBridge.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="X-Tension.cpp" />
     <ClCompile Include="XT-AudioTranslate.cpp" />
+    <ClCompile Include="TaskBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XT-AudioTranslate.def" />
+    <None Include="README.md" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="XT-AudioTranslate.cfg" />

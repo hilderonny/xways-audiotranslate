@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "X-Tension.h"
+#include "TaskBridge.h"
 #include <cstdio>
+#include <nlohmann/json.hpp>
 
-#define MAX_MSG_LEN 128
+#define MAX_MSG_LEN 4096
 
 wchar_t buf[MAX_MSG_LEN];
 static const wchar_t* XT_NAME = L"[XT_AudioTranslate]"; // Prefix for messages
@@ -53,6 +55,22 @@ LONG __stdcall XT_Prepare(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType, void*
 		}
 		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : API-URL: %hs", XT_NAME, API_URL);
 		XWF_OutputMessage(buf, 0);
+
+		std::string jsonResponse = httpGET(std::string(API_URL) + "tasks/list/");
+
+		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, jsonResponse.c_str());
+		XWF_OutputMessage(buf, 0);
+
+		nlohmann::json parsed = nlohmann::json::parse(jsonResponse);
+
+		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, parsed.dump(4).c_str());
+		XWF_OutputMessage(buf, 0);
+
+		std::string translated = translate();
+
+		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : TRANSLATED=%hs", XT_NAME, translated.c_str());
+		XWF_OutputMessage(buf, 0);
+
 	}
 	fclose(file); // Datei schlieﬂen
 	return 0;
