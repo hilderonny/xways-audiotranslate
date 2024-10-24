@@ -87,7 +87,7 @@ void sendFile(const char* server, const char* filePath, const char* endpoint) {
     request += "--" + boundary + "--\r\n"; // Ende der Anfrage
 
     // Anfrage senden
-    send(sock, request.c_str(), request.size(), 0);
+    send(sock, request.c_str(), (int)request.size(), 0);
 
     // Antwort empfangen
     int bytesReceived;

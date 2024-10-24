@@ -1,15 +1,16 @@
 #include <stdio.h>
-#include "X-Tension.h"
-#include "TaskBridge.h"
 #include <cstdio>
 #include <nlohmann/json.hpp>
+#include "X-Tension.h"
+#include "TaskBridge.h"
+#include "ApiUrlInput.h"
 
 #define MAX_MSG_LEN 4096
 
 wchar_t buf[MAX_MSG_LEN];
 static const wchar_t* XT_NAME = L"[XT_AudioTranslate]"; // Prefix for messages
 
-char API_URL[256];
+CHAR API_URL[256];
 
 // http://www.x-ways.net/forensics/x-tensions/XWF_functions.html#E
 
@@ -32,47 +33,41 @@ LONG __stdcall XT_Done(void* lpReserved)
 
 LONG __stdcall XT_About(HANDLE hParentWnd, void* lpReserved)
 {
+	ShowApiUrlDialog();
 	swprintf(buf, MAX_MSG_LEN, L"%ls XT_About", XT_NAME);
 	XWF_OutputMessage(buf, 0);
 	return 0;
 }
 
+std::wstring GetExeFileName()
+{
+	TCHAR buffer[MAX_PATH] = { 0 };;
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+	return std::wstring(buffer);
+}
+
 LONG __stdcall XT_Prepare(HANDLE hVolume, HANDLE hEvidence, DWORD nOpType, void* lpReserved)
 {
-	FILE* file = nullptr; // Dateizeiger initialisieren
-	errno_t err = fopen_s(&file, "XT-AudioTranslate.cfg", "r"); // Datei im Lese-Modus ˆffnen
+	LoadApiUrl(API_URL, 256);
 
-	if (err != 0 || file == nullptr) { // ‹berpr¸fen, ob die Datei geˆffnet werden konnte
-		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : Fehler beim Lesen von XT-AudioTranslate.cfg", XT_NAME);
-		XWF_OutputMessage(buf, 0);
-		return 1;
-	}
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : API-URL: %hs", XT_NAME, API_URL);
+	XWF_OutputMessage(buf, 0);
 
-	if (fgets(API_URL, sizeof(API_URL), file) != nullptr) { // Eine Zeile lesen
-		size_t len = strlen(API_URL);
-		if (len > 0 && API_URL[len - 1] == '\n') {
-			API_URL[len - 1] = '\0'; // Ersetzen durch Nullterminator
-		}
-		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : API-URL: %hs", XT_NAME, API_URL);
-		XWF_OutputMessage(buf, 0);
+	std::string jsonResponse = httpGET(std::string(API_URL) + "tasks/list/");
 
-		std::string jsonResponse = httpGET(std::string(API_URL) + "tasks/list/");
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, jsonResponse.c_str());
+	XWF_OutputMessage(buf, 0);
 
-		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, jsonResponse.c_str());
-		XWF_OutputMessage(buf, 0);
+	nlohmann::json parsed = nlohmann::json::parse(jsonResponse);
 
-		nlohmann::json parsed = nlohmann::json::parse(jsonResponse);
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, parsed.dump(4).c_str());
+	XWF_OutputMessage(buf, 0);
 
-		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, parsed.dump(4).c_str());
-		XWF_OutputMessage(buf, 0);
+	std::string translated = translate();
 
-		std::string translated = translate();
+	swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : TRANSLATED=%hs", XT_NAME, translated.c_str());
+	XWF_OutputMessage(buf, 0);
 
-		swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : TRANSLATED=%hs", XT_NAME, translated.c_str());
-		XWF_OutputMessage(buf, 0);
-
-	}
-	fclose(file); // Datei schlieﬂen
 	return 0;
 }
 

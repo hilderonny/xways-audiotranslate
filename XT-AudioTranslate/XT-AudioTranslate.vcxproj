@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ApiUrlInput.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="TaskBridge.h" />
     <ClInclude Include="X-Tension.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ApiUrlInput.cpp" />
     <ClCompile Include="TaskBridge.cpp" />
     <ClCompile Include="X-Tension.cpp" />
     <ClCompile Include="XT-AudioTranslate.cpp" />
@@ -31,11 +34,6 @@
     <None Include="packages.config" />
     <None Include="README.md" />
     <None Include="XT-AudioTranslate.def" />
-    <CopyFileToFolders Include="XT-AudioTranslate.cfg">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <FileType>Document</FileType>
-    </CopyFileToFolders>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
