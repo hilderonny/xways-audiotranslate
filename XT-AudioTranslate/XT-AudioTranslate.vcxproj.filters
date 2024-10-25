@@ -2,15 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="X-Tension.h" />
-    <ClInclude Include="TaskBridge.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="ApiUrlInput.h" />
+    <ClInclude Include="TaskBridgeOld.h" />
+    <ClInclude Include="include\TaskBridge\TaskBridge.h" />
+    <ClInclude Include="include\Helper\Helper.h" />
+    <ClInclude Include="include\XWF\XWF.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="X-Tension.cpp" />
     <ClCompile Include="XT-AudioTranslate.cpp" />
-    <ClCompile Include="TaskBridge.cpp" />
-    <ClCompile Include="ApiUrlInput.cpp" />
+    <ClCompile Include="TaskBridgeOld.cpp" />
+    <ClCompile Include="src\XWF\XWF.cpp" />
+    <ClCompile Include="src\Helper\Helper.cpp" />
+    <ClCompile Include="src\TaskBridge\TaskBridge.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XT-AudioTranslate.def" />

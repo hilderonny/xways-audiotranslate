@@ -1,3 +1,4 @@
+/*
 ///////////////////////////////////////////////////////////////////////////////
 // X-Tension API - Function headers
 // Copyright X-Ways Software Technology AG
@@ -16,7 +17,7 @@
 // Functions that you may call
 
 // XT_RetrieveFunctionPointers - call this function before calling anything else
-LONG __stdcall XT_RetrieveFunctionPointers();
+//LONG __stdcall XT_RetrieveFunctionPointers();
 
 // XWF_GetSize (tested, deprecated, use XWF_GetProp instead)
 typedef INT64(__stdcall* fptr_XWF_GetSize) (HANDLE hVolumeOrItem, LPVOID lpOptional);
@@ -170,7 +171,7 @@ struct CodePages {
 #pragma pack(pop)
 
 // XWF_Search
-typedef LONG(__stdcall* fptr_XWF_Search) (void/*SearchInfo*/* SInfo, void/*CodePages*/* CPages);
+typedef LONG(__stdcall* fptr_XWF_Search) (void* SInfo, void* CPages);
 
 // XWF_AddSearchTerm
 typedef LONG(__stdcall* fptr_XWF_AddSearchTerm) (LPWSTR lpSearchTermName, DWORD nFlags);
@@ -428,7 +429,7 @@ struct CallerInfo {
 };
 
 // XT_Init - mandatory export
-LONG __stdcall XT_Init(DWORD/*CallerInfo*/ info, DWORD nFlags, HANDLE hMainWnd,	void* lpReserved);
+LONG __stdcall XT_Init(DWORD info, DWORD nFlags, HANDLE hMainWnd,	void* lpReserved);
 
 // The following functions are optional for export
 // In order to implement the functions, implement them and activate them
@@ -442,3 +443,4 @@ LONG __stdcall XT_ProcessItemEx(LONG nItemID, HANDLE hItem, void* lpReserved);
 LONG __stdcall XT_ProcessSearchHit(struct SearchHitInfo* info);
 
 #endif
+*/

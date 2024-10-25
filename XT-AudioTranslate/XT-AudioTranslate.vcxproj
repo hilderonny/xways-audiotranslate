@@ -19,14 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ApiUrlInput.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="TaskBridge.h" />
+    <ClInclude Include="include\Helper\Helper.h" />
+    <ClInclude Include="include\TaskBridge\TaskBridge.h" />
+    <ClInclude Include="include\XWF\XWF.h" />
+    <ClInclude Include="TaskBridgeOld.h" />
     <ClInclude Include="X-Tension.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ApiUrlInput.cpp" />
-    <ClCompile Include="TaskBridge.cpp" />
+    <ClCompile Include="src\Helper\Helper.cpp" />
+    <ClCompile Include="src\TaskBridge\TaskBridge.cpp" />
+    <ClCompile Include="src\XWF\XWF.cpp" />
+    <ClCompile Include="TaskBridgeOld.cpp" />
     <ClCompile Include="X-Tension.cpp" />
     <ClCompile Include="XT-AudioTranslate.cpp" />
   </ItemGroup>
@@ -135,7 +138,8 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
