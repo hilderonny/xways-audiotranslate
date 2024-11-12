@@ -12,6 +12,7 @@
 #include <regex>
 #include <unordered_map>
 #include <iostream>
+#include <codecvt>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -95,7 +96,20 @@ namespace XTAudioTranslate {
 
 		// string zu wstring
 		std::wstring stringToWstring(const std::string& str) {
-			return std::wstring(str.begin(), str.end());
+			// Bestimme die benötigte Länge des UTF-16-Ziel-Strings
+			int wstr_size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+			if (wstr_size == 0) {
+				// Fehlerbehandlung
+				throw std::runtime_error("Fehler bei der UTF-8 zu UTF-16 Konvertierung.");
+			}
+
+			// Erstelle einen std::wstring mit der benötigten Länge
+			std::wstring wstr(wstr_size, 0);
+
+			// Konvertiere den UTF-8-String in UTF-16
+			MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], wstr_size);
+
+			return wstr;
 		}
 
 
