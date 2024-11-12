@@ -5,6 +5,9 @@ namespace XTAudioTranslate {
 
 	namespace XWF {
 
+		typedef BOOL(__stdcall* fptr_XWF_AddExtractedMetadata) (LONG nItemID, LPWSTR lpComment, DWORD nFlagsHowToAdd);
+		extern fptr_XWF_AddExtractedMetadata XWF_AddExtractedMetadata;
+
 		typedef void(__stdcall* fptr_XWF_Close)(HANDLE hVolumeOrItem);
 		extern fptr_XWF_Close XWF_Close;
 
@@ -35,7 +38,7 @@ namespace XTAudioTranslate {
 		void SetCurrentVolume(void* volumeHandle);
 
 		// Add Metadata
-		//void AddMetadata(long nItemID, std::wstring message);
+		void AddMetadata(long nItemID, std::wstring message);
 
 		// Show Progress
 

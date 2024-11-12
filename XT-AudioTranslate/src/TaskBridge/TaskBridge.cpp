@@ -24,7 +24,7 @@ namespace XTAudioTranslate {
 			std::string addResult = Helper::httpPostFile(currentApiUrl + "tasks/add/", "{\"type\":\"transcribe\"}", fileContent);
 			nlohmann::json addJson = nlohmann::json::parse(addResult);
 			std::string taskId = addJson["id"];
-			XWF::OutputMessage(std::format(L"ID: {}", Helper::stringToWstring(taskId)));
+			//XWF::OutputMessage(std::format(L"ID: {}", Helper::stringToWstring(taskId)));
 
 			// Wait for completion
 			std::string statusResult, status = "";
@@ -61,7 +61,7 @@ namespace XTAudioTranslate {
 			std::string addResult = Helper::httpPost(currentApiUrl + "tasks/add/", jsonRequest.dump());
 			nlohmann::json addJson = nlohmann::json::parse(addResult);
 			std::string taskId = addJson["id"];
-			XWF::OutputMessage(std::format(L"ID: {}", Helper::stringToWstring(taskId)));
+			//XWF::OutputMessage(std::format(L"ID: {}", Helper::stringToWstring(taskId)));
 
 			// Wait for completion
 			std::string statusResult, status = "";

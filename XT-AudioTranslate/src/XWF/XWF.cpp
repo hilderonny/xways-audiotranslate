@@ -10,6 +10,7 @@ namespace XTAudioTranslate {
 
 	namespace XWF {
 
+		fptr_XWF_AddExtractedMetadata XWF_AddExtractedMetadata;
 		fptr_XWF_Close XWF_Close;
 		fptr_XWF_GetProp XWF_GetProp;
 		fptr_XWF_GetSize XWF_GetSize;
@@ -21,6 +22,7 @@ namespace XTAudioTranslate {
 
 		void __stdcall RetrieveFunctionPointers() {
 			HMODULE Hdl = GetModuleHandle(NULL);
+			XWF_AddExtractedMetadata = (fptr_XWF_AddExtractedMetadata)GetProcAddress(Hdl, "XWF_AddExtractedMetadata");
 			XWF_Close = (fptr_XWF_Close)GetProcAddress(Hdl, "XWF_Close");
 			XWF_GetProp = (fptr_XWF_GetProp)GetProcAddress(Hdl, "XWF_GetProp");
 			XWF_GetSize = (fptr_XWF_GetSize)GetProcAddress(Hdl, "XWF_GetSize");
@@ -35,19 +37,23 @@ namespace XTAudioTranslate {
 
 		std::string ReadItemContent(long nItemId) {
 			HANDLE hItem = XWF_OpenItem(currentVolumeHandle, nItemId, 1);
-			OutputMessage(std::format(L"Item handle {}", hItem));
+			//OutputMessage(std::format(L"Item handle {}", hItem));
 			INT64 size = XWF_GetProp(hItem, 1, NULL);
-			OutputMessage(std::format(L"Size {}", size));
+			//OutputMessage(std::format(L"Size {}", size));
 			std::string buffer(size, '\0');
 			DWORD bytesRead = XWF_Read(hItem, 0, reinterpret_cast<BYTE*>(&buffer[0]), (DWORD)size);
-			OutputMessage(std::format(L"Bytes read {}", bytesRead));
+			//OutputMessage(std::format(L"Bytes read {}", bytesRead));
 			XWF_Close(hItem);
 			return buffer;
 		}
 
 		void SetCurrentVolume(void* volumeHandle) {
 			currentVolumeHandle = volumeHandle;
-			OutputMessage(std::format(L"Using volume {}", volumeHandle));
+			//OutputMessage(std::format(L"Using volume {}", volumeHandle));
+		}
+
+		void AddMetadata(long nItemID, std::wstring message) {
+			XWF_AddExtractedMetadata(nItemID, message.data(), 0x02);
 		}
 
 	}

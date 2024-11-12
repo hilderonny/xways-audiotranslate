@@ -15,7 +15,7 @@ namespace XTAudioTranslate {
 		// HTTP GET
 		std::string httpGet(const std::string& url);
 
-		// TODO: HTTP POST
+		// HTTP POST
 		std::string httpPost(const std::string& url, const std::string& json);
 
 		// HTTP POST FILE

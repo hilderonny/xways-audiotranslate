@@ -45,50 +45,46 @@ namespace XTAudioTranslate {
 		// Read item content
 		std::string itemContent = XWF::ReadItemContent(nItemID);
 		std::string base64Content = Helper::base64Encode(reinterpret_cast<const BYTE*>(itemContent.data()), itemContent.size());
-		XWF::OutputMessage(std::format(L"Item content: {}...", Helper::stringToWstring(base64Content.substr(0, 80))));
+		//XWF::OutputMessage(std::format(L"Item content: {}...", Helper::stringToWstring(base64Content.substr(0, 80))));
 		
-		// TODO: Transcribe item
+		// Transcribe item
+		XWF::OutputMessage(L"Transcribing ...");
 		nlohmann::json transcribeJson = TaskBridge::Transcribe(itemContent);
 		nlohmann::json textsToTranslate = {};
 		std::string sourceLanguage = transcribeJson["language"];
+		std::string originalText = "";
 		for (auto& paragraph : transcribeJson["texts"]) {
+			std::string text = paragraph["text"];
+			if (originalText.size() > 0) {
+				originalText += " ";
+			}
+			originalText += text;
 			textsToTranslate.push_back(paragraph["text"]);
 		}
-		XWF::OutputMessage(Helper::stringToWstring(transcribeJson.dump(4)));
+		//XWF::OutputMessage(Helper::stringToWstring(transcribeJson.dump()));
+		//XWF::OutputMessage(Helper::stringToWstring(sourceLanguage));
+		//XWF::OutputMessage(Helper::stringToWstring(originalText));
 
-		// TODO: Add language, transcription and possible error to metadata
-		
-		// TODO: Translate text
+		// Add language and transcription to metadata
+		XWF::AddMetadata(nItemID, std::format(L"[XTAT] audio:translate:language {}", Helper::stringToWstring(sourceLanguage)));
+		XWF::AddMetadata(nItemID, std::format(L"[XTAT] audio:translate:original {}", Helper::stringToWstring(originalText)));
+
+		// Translate text
+		XWF::OutputMessage(L"Translating ...");
 		nlohmann::json translateJson = TaskBridge::Translate(sourceLanguage, textsToTranslate);
-		XWF::OutputMessage(Helper::stringToWstring(translateJson.dump(4)));
+		//XWF::OutputMessage(Helper::stringToWstring(translateJson.dump()));
 
-		// TODO: Add translation and possible error to metadata
-
-
-		//const wchar_t* name = XWF_GetItemName(nItemID);
-		//swprintf(buf, MAX_MSG_LEN, L"%ls XT_ProcessItemEx - %ls", XT_NAME, name);
-		//XWF_OutputMessage(buf, 0);
-
-		//swprintf(buf, MAX_MSG_LEN, L"[XTAT] audio:tranlate:original %ls", name);
-		//XWF_AddExtractedMetadata(nItemID, buf, 0x02);
-
-
-
-		//LoadApiUrl(API_URL, 256);
-
-		//swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : API-URL: %hs", XT_NAME, API_URL);
-		//XWF_OutputMessage(buf, 0);
-
-		//std::string jsonResponse = httpGET(std::string(API_URL) + "tasks/list/");
-		//nlohmann::json parsed = nlohmann::json::parse(jsonResponse);
-
-		//swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : WORKERS=%hs", XT_NAME, parsed.dump(4).c_str());
-		//XWF_OutputMessage(buf, 0);
-
-		//std::string translated = translate();
-
-		//swprintf(buf, MAX_MSG_LEN, L"%ls XT_Prepare : TRANSLATED=%hs", XT_NAME, translated.c_str());
-		//XWF_OutputMessage(buf, 0);
+		// Add translation to metadata
+		std::string translatedText = "";
+		for (auto& paragraph : translateJson["texts"]) {
+			std::string text = paragraph["text"];
+			if (translatedText.size() > 0) {
+				translatedText += " ";
+			}
+			translatedText += text;
+		}
+		XWF::AddMetadata(nItemID, std::format(L"[XTAT] audio:translate:de {}", Helper::stringToWstring(translatedText)));
+		XWF::OutputMessage(std::format(L"Finished item {}", nItemID));
 
 		return 0;
 	}

@@ -100,8 +100,7 @@ namespace XTAudioTranslate {
 
 		// HTTP GET
 		std::string httpGet(const std::string& url) {
-
-			XWF::OutputMessage(std::format(L"Helper::httpGet(\"{}\")", stringToWstring(url)));
+			//XWF::OutputMessage(std::format(L"Helper::httpGet(\"{}\")", stringToWstring(url)));
 
 			WSADATA wsaData;
 			SOCKET sock;
@@ -165,13 +164,13 @@ namespace XTAudioTranslate {
 			WSACleanup();
 
 			// Rückgabe
-			XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
 			return response;
 		}
 
 		// HTTP POST
 		std::string httpPost(const std::string& url, const std::string& json) {
-			XWF::OutputMessage(std::format(L"Helper::httpPost(\"{}\")", stringToWstring(url)));
+			//XWF::OutputMessage(std::format(L"Helper::httpPost(\"{}\")", stringToWstring(url)));
 
 			WSADATA wsaData;
 			SOCKET sock;
@@ -222,9 +221,9 @@ namespace XTAudioTranslate {
 			request += "Content-Length: " + std::to_string(contentLength) + "\r\n";
 			request += "\r\n";
 			request += postBody;
-			XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
+			//XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
 			send(sock, request.c_str(), (int)request.size(), 0);
-			XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
+			//XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
 
 			// Antwort empfangen
 			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
@@ -250,14 +249,14 @@ namespace XTAudioTranslate {
 			WSACleanup();
 
 			// Rückgabe
-			XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
 			return response;
 
 		}
 
 		// HTTP POST FILE
 		std::string httpPostFile(const std::string& url, const std::string& json, const std::string& fileContent) {
-			XWF::OutputMessage(std::format(L"Helper::httpPostFile(\"{}\")", stringToWstring(url)));
+			//XWF::OutputMessage(std::format(L"Helper::httpPostFile(\"{}\")", stringToWstring(url)));
 
 			WSADATA wsaData;
 			SOCKET sock;
@@ -312,9 +311,9 @@ namespace XTAudioTranslate {
 			request += "Content-Length: " + std::to_string(contentLength) + "\r\n";
 			request += "\r\n";
 			request += postBody;
-			XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
+			//XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
 			send(sock, request.c_str(), (int)request.size(), 0);
-			XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
+			//XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
 
 			// Antwort empfangen
 			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
@@ -340,15 +339,14 @@ namespace XTAudioTranslate {
 			WSACleanup();
 
 			// Rückgabe
-			XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
 			return response;
 
 		}
 
 		// HTTP DELETE
 		std::string httpDelete(const std::string& url) {
-
-			XWF::OutputMessage(std::format(L"Helper::httpDelete(\"{}\")", stringToWstring(url)));
+			//XWF::OutputMessage(std::format(L"Helper::httpDelete(\"{}\")", stringToWstring(url)));
 
 			WSADATA wsaData;
 			SOCKET sock;
@@ -412,7 +410,7 @@ namespace XTAudioTranslate {
 			WSACleanup();
 
 			// Rückgabe
-			XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
 			return response;
 		}
 
