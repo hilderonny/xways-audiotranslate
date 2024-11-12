@@ -3,6 +3,7 @@
 #include "Helper/Helper.h"
 #include "TaskBridge/TaskBridge.h"
 #include "XWF/XWF.h"
+#include "../src/json.hpp"
 
 namespace XTAudioTranslate {
 
@@ -47,10 +48,19 @@ namespace XTAudioTranslate {
 		XWF::OutputMessage(std::format(L"Item content: {}...", Helper::stringToWstring(base64Content.substr(0, 80))));
 		
 		// TODO: Transcribe item
+		nlohmann::json transcribeJson = TaskBridge::Transcribe(itemContent);
+		nlohmann::json textsToTranslate = {};
+		std::string sourceLanguage = transcribeJson["language"];
+		for (auto& paragraph : transcribeJson["texts"]) {
+			textsToTranslate.push_back(paragraph["text"]);
+		}
+		XWF::OutputMessage(Helper::stringToWstring(transcribeJson.dump(4)));
 
 		// TODO: Add language, transcription and possible error to metadata
 		
 		// TODO: Translate text
+		nlohmann::json translateJson = TaskBridge::Translate(sourceLanguage, textsToTranslate);
+		XWF::OutputMessage(Helper::stringToWstring(translateJson.dump(4)));
 
 		// TODO: Add translation and possible error to metadata
 

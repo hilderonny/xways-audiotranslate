@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Helper\Helper.cpp" />
+    <ClCompile Include="src\json.hpp" />
     <ClCompile Include="src\TaskBridge\TaskBridge.cpp" />
     <ClCompile Include="src\XWF\XWF.cpp" />
     <ClCompile Include="TaskBridgeOld.cpp" />

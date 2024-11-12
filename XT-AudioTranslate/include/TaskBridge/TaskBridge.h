@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "../../src/json.hpp"
 
 namespace XTAudioTranslate {
 
@@ -8,9 +9,9 @@ namespace XTAudioTranslate {
 
 		void SetApiUrl(std::string apiUrl);
 
-		//std::vector<std::wstring> Transcribe(std::string fileContent);
+		nlohmann::json Transcribe(std::string fileContent);
 
-		//std::vector<std::wstring> Translate(std::vector<std::wstring> originalTexts);
+		nlohmann::json Translate(std::string sourceLanguage, nlohmann::json originalTexts);
 
 	}
 
