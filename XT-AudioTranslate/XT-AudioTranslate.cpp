@@ -7,6 +7,8 @@
 
 namespace XTAudioTranslate {
 
+	const std::wstring VERSION = L"1.0.0";
+
 	LONG __stdcall XT_Init(DWORD nVersion, DWORD nFlags, HANDLE hMainWnd, void* lpReserved)
 	{
 		// Fetch function pointers
@@ -18,13 +20,16 @@ namespace XTAudioTranslate {
 
 		// TODO: In settings there should be taskBridgeApiUrl and targetLanguage
 
+		XWF::OutputMessage(std::format(L"Version {}", VERSION));
+
 		return 2; // Mark this extension as thread safe - https://www.x-ways.net/forensics/x-tensions/XT_functions.html#:~:text=not%20thread%2Dsafe.-,0x02,-%3A%20Your%20X%2DTension
 	}
 
 	LONG __stdcall XT_About(HANDLE hParentWnd, void* lpReserved)
 	{
 		// TODO: Show info window with hint to github repository
-		XWF::OutputMessage(L"XT_About");
+		XWF::OutputMessage(L"Transcribe and translate media files using TaskBridge (https://github.com/hilderonny/taskbridge)");
+		XWF::OutputMessage(L"Detailed information about this extension you can find at https://github.com/hilderonny/xways-audiotranslate");
 
 		return 0;
 	}

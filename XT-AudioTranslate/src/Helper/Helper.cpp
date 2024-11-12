@@ -1,5 +1,7 @@
 //using namespace std;
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -9,11 +11,9 @@
 #include "XWF/XWF.h"
 #include <regex>
 #include <unordered_map>
-//#include <codecvt>
-//#include <winsock2.h>
-//#include <iostream>
+#include <iostream>
 
-//#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ws2_32.lib")
 
 namespace XTAudioTranslate {
 
@@ -98,55 +98,65 @@ namespace XTAudioTranslate {
 			return std::wstring(str.begin(), str.end());
 		}
 
-		// HTTP GET
-		std::string httpGet(const std::string& url) {
-			//XWF::OutputMessage(std::format(L"Helper::httpGet(\"{}\")", stringToWstring(url)));
 
+		static std::string sendRequest(const std::string& host, const std::string& port, const std::string& request) {
 			WSADATA wsaData;
-			SOCKET sock;
-			std::string response, host, path, port;
+			SOCKET sock = INVALID_SOCKET;
+			struct addrinfo* result = NULL, * ptr = NULL, hints;
+			std::string response;
 
-			// WinSock initialisieren (Version 2.2)
+			// Winsock initialisieren
 			if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-				XWF::OutputMessage(L"ERROR in Helper::httpGet(std::string&): WSAStartup failed.");
+				XWF::OutputMessage(L"ERROR in Helper::sendRequest: WSAStartup failed.");
 				return "";
 			}
 
-			// Socket erstellen
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (sock == INVALID_SOCKET) {
-				XWF::OutputMessage(L"ERROR in Helper::httpGet(std::string&): Socket creation failed.");
-				return "";
-			}
+			ZeroMemory(&hints, sizeof(hints));
+			hints.ai_family = AF_INET;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_protocol = IPPROTO_TCP;
 
-			// Zieladresse festlegen
-			parseURL(url, host, path, port);
-			sockaddr_in serverAddress;
-			serverAddress.sin_family = AF_INET;
-			serverAddress.sin_port = htons(std::stoi(port.c_str()));
-			serverAddress.sin_addr.s_addr = inet_addr(host.c_str());
-			
-			// Mit Server verbinden
-			if (connect(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-				XWF::OutputMessage(std::format(L"ERROR in Helper::httpGet(std::string&): Connection to Server {}:{} failed.", stringToWstring(host), stringToWstring(port)));
-				closesocket(sock);
+			// Adresse auflösen
+			if (getaddrinfo(host.c_str(), port.c_str(), &hints, &result) != 0) {
+				XWF::OutputMessage(L"ERROR in Helper::sendRequest: getaddrinfo failed.");
 				WSACleanup();
 				return "";
 			}
 
-			// Anfrage erstellen und senden
-			std::string request = "GET " + path + " HTTP/1.1\r\n";
-			request += "Host: " + host + "\r\n";
-			request += "Connection: close\r\n\r\n";
+			// Socket erstellen
+			sock = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+			if (sock == INVALID_SOCKET) {
+				XWF::OutputMessage(L"ERROR in Helper::sendRequest: Socket creation failed.");
+				freeaddrinfo(result);
+				WSACleanup();
+				return "";
+			}
+
+			int timeout = 15000; // Timeout in Millisekunden
+			setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+
+			// Mit dem Server verbinden
+			if (connect(sock, result->ai_addr, (int)result->ai_addrlen) == SOCKET_ERROR) {
+				XWF::OutputMessage(L"ERROR in Helper::sendRequest: Connection failed.");
+				closesocket(sock);
+				freeaddrinfo(result);
+				WSACleanup();
+				return "";
+			}
+
+			// Anfrage senden
 			send(sock, request.c_str(), (int)request.length(), 0);
 
 			// Antwort empfangen
-			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
+			char buffer[4096];
 			int bytesReceived;
 			bool headerParsed = false;
+
 			while ((bytesReceived = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
-				buffer[bytesReceived] = '\0'; // Null-Terminator für den String, falls dieser kürzer als der Puffer ist
+				buffer[bytesReceived] = '\0'; // Null-Terminator für den String
 				response += buffer;
+
+				// Header überspringen
 				if (!headerParsed) {
 					size_t headerEnd = response.find("\r\n\r\n");
 					if (headerEnd != std::string::npos) {
@@ -155,56 +165,44 @@ namespace XTAudioTranslate {
 					}
 				}
 			}
+
 			if (bytesReceived == SOCKET_ERROR) {
-				XWF::OutputMessage(L"ERROR in Helper::httpGet(std::string&): recv failed.");
+				XWF::OutputMessage(L"ERROR in Helper::sendRequest: recv failed.");
+				std::cerr << "recv failed." << std::endl;
 			}
-			
+
 			// Aufräumen
 			closesocket(sock);
+			freeaddrinfo(result);
 			WSACleanup();
 
-			// Rückgabe
-			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
 			return response;
+		}
+
+
+		// HTTP GET
+		std::string httpGet(const std::string& url) {
+
+			// URL parsen, um Host, Pfad und Port zu extrahieren
+			std::string host, path, port;
+			parseURL(url, host, path, port);
+
+			// HTTP GET-Anfrage erstellen
+			std::string request = "GET " + path + " HTTP/1.1\r\n";
+			request += "Host: " + host + "\r\n";
+			request += "Connection: close\r\n\r\n"; // Verbindung schließen nach der Antwort
+
+			std::string response = sendRequest(host, port, request);
+			return response;
+
 		}
 
 		// HTTP POST
 		std::string httpPost(const std::string& url, const std::string& json) {
-			//XWF::OutputMessage(std::format(L"Helper::httpPost(\"{}\")", stringToWstring(url)));
 
-			WSADATA wsaData;
-			SOCKET sock;
-			std::string response, host, path, port;
-
-			// WinSock initialisieren (Version 2.2)
-			if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPost(std::string&, std::string&): WSAStartup failed.");
-				return "";
-			}
-
-			// Socket erstellen
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (sock == INVALID_SOCKET) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPost(std::string&, std::string&): Socket creation failed.");
-				return "";
-			}
-			int timeout = 15000; // Timeout in Millisekunden
-			setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-
-			// Zieladresse festlegen
+			// URL parsen, um Host, Pfad und Port zu extrahieren
+			std::string host, path, port;
 			parseURL(url, host, path, port);
-			sockaddr_in serverAddress;
-			serverAddress.sin_family = AF_INET;
-			serverAddress.sin_port = htons(std::stoi(port.c_str()));
-			serverAddress.sin_addr.s_addr = inet_addr(host.c_str());
-
-			// Mit Server verbinden
-			if (connect(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-				XWF::OutputMessage(std::format(L"ERROR in Helper::httpPost(std::string&, std::string&): Connection to Server {}:{} failed.", stringToWstring(host), stringToWstring(port)));
-				closesocket(sock);
-				WSACleanup();
-				return "";
-			}
 
 			// Request-Inhalt zusammenstellen
 			const std::string boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
@@ -213,7 +211,7 @@ namespace XTAudioTranslate {
 			postBody += json + "\r\n";
 			postBody += "--" + boundary + "--\r\n";
 
-			int contentLength = postBody.size();
+			int contentLength = (int)postBody.size();
 			// Anfrage erstellen und senden
 			std::string request = "POST " + path + " HTTP/1.1\r\n";
 			request += "Host: " + host + "\r\n";
@@ -221,76 +219,18 @@ namespace XTAudioTranslate {
 			request += "Content-Length: " + std::to_string(contentLength) + "\r\n";
 			request += "\r\n";
 			request += postBody;
-			//XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
-			send(sock, request.c_str(), (int)request.size(), 0);
-			//XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
 
-			// Antwort empfangen
-			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
-			int bytesReceived;
-			bool headerParsed = false;
-			while ((bytesReceived = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
-				buffer[bytesReceived] = '\0'; // Null-Terminator für den String, falls dieser kürzer als der Puffer ist
-				response += buffer;
-				if (!headerParsed) {
-					size_t headerEnd = response.find("\r\n\r\n");
-					if (headerEnd != std::string::npos) {
-						response = response.substr(headerEnd + 4); // Entferne den Header
-						headerParsed = true;
-					}
-				}
-			}
-			if (bytesReceived == SOCKET_ERROR) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPost(std::string&, std::string&): recv failed.");
-			}
-
-			// Aufräumen
-			closesocket(sock);
-			WSACleanup();
-
-			// Rückgabe
-			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			std::string response = sendRequest(host, port, request);
 			return response;
 
 		}
 
 		// HTTP POST FILE
 		std::string httpPostFile(const std::string& url, const std::string& json, const std::string& fileContent) {
-			//XWF::OutputMessage(std::format(L"Helper::httpPostFile(\"{}\")", stringToWstring(url)));
 
-			WSADATA wsaData;
-			SOCKET sock;
-			std::string response, host, path, port;
-
-			// WinSock initialisieren (Version 2.2)
-			if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPostFile(std::string&, std::string&, std::string&): WSAStartup failed.");
-				return "";
-			}
-
-			// Socket erstellen
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (sock == INVALID_SOCKET) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPostFile(std::string&, std::string&, std::string&): Socket creation failed.");
-				return "";
-			}
-			int timeout = 15000; // Timeout in Millisekunden
-			setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-
-			// Zieladresse festlegen
+			// URL parsen, um Host, Pfad und Port zu extrahieren
+			std::string host, path, port;
 			parseURL(url, host, path, port);
-			sockaddr_in serverAddress;
-			serverAddress.sin_family = AF_INET;
-			serverAddress.sin_port = htons(std::stoi(port.c_str()));
-			serverAddress.sin_addr.s_addr = inet_addr(host.c_str());
-
-			// Mit Server verbinden
-			if (connect(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-				XWF::OutputMessage(std::format(L"ERROR in Helper::httpPostFile(std::string&, std::string&, std::string&): Connection to Server {}:{} failed.", stringToWstring(host), stringToWstring(port)));
-				closesocket(sock);
-				WSACleanup();
-				return "";
-			}
 
 			// Request-Inhalt zusammenstellen
 			const std::string boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
@@ -303,7 +243,7 @@ namespace XTAudioTranslate {
 			postBody += json + "\r\n";
 			postBody += "--" + boundary + "--\r\n";
 
-			int contentLength = postBody.size();
+			int contentLength = (int)postBody.size();
 			// Anfrage erstellen und senden
 			std::string request = "POST " + path + " HTTP/1.1\r\n";
 			request += "Host: " + host + "\r\n";
@@ -311,107 +251,27 @@ namespace XTAudioTranslate {
 			request += "Content-Length: " + std::to_string(contentLength) + "\r\n";
 			request += "\r\n";
 			request += postBody;
-			//XWF::OutputMessage(std::format(L"Sending request of size {} - content-length {}", request.size(), contentLength));
-			send(sock, request.c_str(), (int)request.size(), 0);
-			//XWF::OutputMessage(std::format(L"Sent. Waiting for response ..."));
 
-			// Antwort empfangen
-			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
-			int bytesReceived;
-			bool headerParsed = false;
-			while ((bytesReceived = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
-				buffer[bytesReceived] = '\0'; // Null-Terminator für den String, falls dieser kürzer als der Puffer ist
-				response += buffer;
-				if (!headerParsed) {
-					size_t headerEnd = response.find("\r\n\r\n");
-					if (headerEnd != std::string::npos) {
-						response = response.substr(headerEnd + 4); // Entferne den Header
-						headerParsed = true;
-					}
-				}
-			}
-			if (bytesReceived == SOCKET_ERROR) {
-				XWF::OutputMessage(L"ERROR in Helper::httpPostFile(std::string&, std::string&, std::string&): recv failed.");
-			}
-
-			// Aufräumen
-			closesocket(sock);
-			WSACleanup();
-
-			// Rückgabe
-			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			std::string response = sendRequest(host, port, request);
 			return response;
 
 		}
 
 		// HTTP DELETE
 		std::string httpDelete(const std::string& url) {
-			//XWF::OutputMessage(std::format(L"Helper::httpDelete(\"{}\")", stringToWstring(url)));
 
-			WSADATA wsaData;
-			SOCKET sock;
-			std::string response, host, path, port;
-
-			// WinSock initialisieren (Version 2.2)
-			if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-				XWF::OutputMessage(L"ERROR in Helper::httpDelete(std::string&): WSAStartup failed.");
-				return "";
-			}
-
-			// Socket erstellen
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			if (sock == INVALID_SOCKET) {
-				XWF::OutputMessage(L"ERROR in Helper::httpDelete(std::string&): Socket creation failed.");
-				return "";
-			}
-
-			// Zieladresse festlegen
+			// URL parsen, um Host, Pfad und Port zu extrahieren
+			std::string host, path, port;
 			parseURL(url, host, path, port);
-			sockaddr_in serverAddress;
-			serverAddress.sin_family = AF_INET;
-			serverAddress.sin_port = htons(std::stoi(port.c_str()));
-			serverAddress.sin_addr.s_addr = inet_addr(host.c_str());
-
-			// Mit Server verbinden
-			if (connect(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-				XWF::OutputMessage(std::format(L"ERROR in Helper::httpDelete(std::string&): Connection to Server {}:{} failed.", stringToWstring(host), stringToWstring(port)));
-				closesocket(sock);
-				WSACleanup();
-				return "";
-			}
 
 			// Anfrage erstellen und senden
 			std::string request = "DELETE " + path + " HTTP/1.1\r\n";
 			request += "Host: " + host + "\r\n";
 			request += "Connection: close\r\n\r\n";
-			send(sock, request.c_str(), (int)request.length(), 0);
 
-			// Antwort empfangen
-			char buffer[4096]; // Maximal 4096 Bytes am Stück lesen
-			int bytesReceived;
-			bool headerParsed = false;
-			while ((bytesReceived = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0) {
-				buffer[bytesReceived] = '\0'; // Null-Terminator für den String, falls dieser kürzer als der Puffer ist
-				response += buffer;
-				if (!headerParsed) {
-					size_t headerEnd = response.find("\r\n\r\n");
-					if (headerEnd != std::string::npos) {
-						response = response.substr(headerEnd + 4); // Entferne den Header
-						headerParsed = true;
-					}
-				}
-			}
-			if (bytesReceived == SOCKET_ERROR) {
-				XWF::OutputMessage(L"ERROR in Helper::httpDelete(std::string&): recv failed.");
-			}
-
-			// Aufräumen
-			closesocket(sock);
-			WSACleanup();
-
-			// Rückgabe
-			//XWF::OutputMessage(std::format(L"Response: {}", stringToWstring(response)));
+			std::string response = sendRequest(host, port, request);
 			return response;
+
 		}
 
 		// Load API URL

@@ -22,16 +22,12 @@
     <ClInclude Include="include\Helper\Helper.h" />
     <ClInclude Include="include\TaskBridge\TaskBridge.h" />
     <ClInclude Include="include\XWF\XWF.h" />
-    <ClInclude Include="TaskBridgeOld.h" />
-    <ClInclude Include="X-Tension.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Helper\Helper.cpp" />
     <ClCompile Include="src\json.hpp" />
     <ClCompile Include="src\TaskBridge\TaskBridge.cpp" />
     <ClCompile Include="src\XWF\XWF.cpp" />
-    <ClCompile Include="TaskBridgeOld.cpp" />
-    <ClCompile Include="X-Tension.cpp" />
     <ClCompile Include="XT-AudioTranslate.cpp" />
   </ItemGroup>
   <ItemGroup>
