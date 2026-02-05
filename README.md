@@ -1,5 +1,7 @@
 # xways-audiotranslate
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hilderonny/xways-audiotranslate)
+
 [X-Ways](https://www.x-ways.net/) extension for audio translation via distributed workers. Uses [Task Bridge](https://github.com/hilderonny/taskbridge) together with [Transcribe](https://github.com/hilderonny/taskworker-transcribe) and [Translate](https://github.com/hilderonny/taskworker-translate) workers for distributing and doing the work.
 
 ![X-Ways extension](images/xways-extension.png)
